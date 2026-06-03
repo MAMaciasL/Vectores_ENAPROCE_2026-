@@ -1,6 +1,6 @@
 Instalar dependencias necesarias para el proyecto:
 
-customtkinter
-pandas
-openpyxl
-pillow
+pip install customtkinter
+pip install pandas
+pip install openpyxl
+pip install pillow

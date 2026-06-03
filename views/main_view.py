@@ -61,7 +61,8 @@ class MainView(ctk.CTkFrame):
             "📂 Validación",
             "📊 Reportes",
             "🕘 Historial",
-            "⚙ Configuración"
+            "⚙ Configuración",
+            "❓ Ayuda"
         ]
 
         for item in menu_items:

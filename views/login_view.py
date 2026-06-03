@@ -5,7 +5,7 @@ from tkinter import messagebox
 from config import *
 from views.main_view import MainView
 
-USUARIO = "admin"
+USUARIO = "Admin"
 PASSWORD = "1234"
 
 
@@ -24,8 +24,8 @@ class LoginView(ctk.CTkFrame):
 
         card = ctk.CTkFrame(
             self,
-            width=420,
-            height=430,
+            width=350,
+            height=360,
             fg_color=COLOR_CARD,
             corner_radius=15
         )
@@ -62,7 +62,7 @@ class LoginView(ctk.CTkFrame):
         self.entry_usuario = ctk.CTkEntry(
             card,
             placeholder_text="Usuario",
-            width=300,
+            width=150,
             height=40
         )
         
@@ -72,7 +72,7 @@ class LoginView(ctk.CTkFrame):
             card,
             placeholder_text="Contraseña",
             show="*",
-            width=300,
+            width=150,
             height=40
         )
         
@@ -86,7 +86,7 @@ class LoginView(ctk.CTkFrame):
             text="Ingresar",
             fg_color=COLOR_PRINCIPAL,
             hover_color=COLOR_SECUNDARIO,
-            width=300,
+            width=350,
             height=42,
             command=self.verificar_login
         )

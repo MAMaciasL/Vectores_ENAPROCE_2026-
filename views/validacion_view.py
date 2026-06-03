@@ -1,5 +1,5 @@
 import customtkinter as ctk
-from tkinter import filedialog, messagebox, ttk
+from tkinter import filedialog, messagebox, ttk, Image
 import pandas as pd
 import threading
 
@@ -52,9 +52,11 @@ class ValidacionView(ctk.CTkFrame):
             text="Validador de Cuestionarios ENAPROCE",
             font=(FONT, 28, "bold"),
             text_color=COLOR_TEXTO
+            
         )
 
-        titulo.pack(anchor="w", padx=25, pady=(15, 0))
+    
+        titulo.pack(anchor="center", padx=25, pady=(15, 0))
 
         subtitulo = ctk.CTkLabel(
             header,
@@ -63,7 +65,7 @@ class ValidacionView(ctk.CTkFrame):
             text_color=COLOR_GRIS
         )
 
-        subtitulo.pack(anchor="w", padx=25)
+        subtitulo.pack(anchor="center", padx=25)
 
     # =================================================
     # DASHBOARD
@@ -358,11 +360,13 @@ class ValidacionView(ctk.CTkFrame):
 
         except Exception as e:
 
+            error_msg = f"Error al procesar el archivo:\n{str(e)}"
+
             self.after(
                 0,
                 lambda: messagebox.showerror(
                     "Error",
-                    str(e)
+                    error_msg
                 )
             )
 

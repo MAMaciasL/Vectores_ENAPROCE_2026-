@@ -8,7 +8,7 @@ def validar_archivo(ruta):
 
     lista_errores = []
 
-    for index, fila in df.iterrows():
+    for _, fila in df.iterrows():
 
         errores = validar_registro(fila)
 
