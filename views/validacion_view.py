@@ -1,10 +1,11 @@
 import customtkinter as ctk
-from tkinter import filedialog, messagebox, ttk, Image
+from tkinter import filedialog, messagebox, ttk
 import pandas as pd
 import threading
 
 from config import *
 from services.validaciones_service import validar_archivo
+from services.historial_service import guardar_historial
 
 
 class ValidacionView(ctk.CTkFrame):
@@ -14,9 +15,7 @@ class ValidacionView(ctk.CTkFrame):
 
         self.df_errores = pd.DataFrame()
 
-        self.configure(
-            fg_color="transparent"
-        )
+        self.configure(fg_color="transparent")
 
         self.grid_columnconfigure(0, weight=1)
         self.grid_rowconfigure(2, weight=1)
@@ -26,298 +25,161 @@ class ValidacionView(ctk.CTkFrame):
         self.crear_tabla()
         self.crear_footer()
 
-    # =================================================
+    # =========================
     # HEADER
-    # =================================================
-
+    # =========================
     def crear_header(self):
 
-        header = ctk.CTkFrame(
-            self,
-            fg_color=COLOR_CARD,
-            corner_radius=15,
-            height=90
-        )
+        header = ctk.CTkFrame(self, fg_color="transparent")
+        header.grid(row=0, column=0, sticky="ew", padx=20, pady=(15, 5))
 
-        header.grid(
-            row=0,
-            column=0,
-            sticky="ew",
-            padx=20,
-            pady=(20, 10)
-        )
-
-        titulo = ctk.CTkLabel(
+        ctk.CTkLabel(
             header,
-            text="Validador de Cuestionarios ENAPROCE",
-            font=(FONT, 28, "bold"),
+            text="Validador Vectores ENAPROCE",
+            font=(FONT, 22, "bold"),
             text_color=COLOR_TEXTO
-            
-        )
+        ).pack(anchor="w")
 
-    
-        titulo.pack(anchor="center", padx=25, pady=(15, 0))
-
-        subtitulo = ctk.CTkLabel(
+        ctk.CTkLabel(
             header,
-            text="Instituto Nacional de Estadística y Geografía",
-            font=(FONT, 14),
+            text="Carga un archivo Excel para validar información",
+            font=(FONT, 13),
             text_color=COLOR_GRIS
-        )
+        ).pack(anchor="w")
 
-        subtitulo.pack(anchor="center", padx=25)
-
-    # =================================================
+    # =========================
     # DASHBOARD
-    # =================================================
-
+    # =========================
     def crear_dashboard(self):
 
-        dashboard = ctk.CTkFrame(
-            self,
-            fg_color="transparent"
-        )
+        dashboard = ctk.CTkFrame(self, fg_color="transparent")
+        dashboard.grid(row=1, column=0, sticky="ew", padx=20, pady=(5, 10))
 
-        dashboard.grid(
-            row=1,
-            column=0,
-            sticky="ew",
-            padx=20,
-            pady=10
-        )
+        dashboard.grid_columnconfigure((0, 1, 2), weight=1)
 
-        dashboard.grid_columnconfigure((0,1,2), weight=1)
-
-        self.card_registros = self.crear_card(
-            dashboard,
-            "Registros",
-            0,
-            0
-        )
-
-        self.card_errores = self.crear_card(
-            dashboard,
-            "Errores",
-            0,
-            1
-        )
-
-        self.card_variables = self.crear_card(
-            dashboard,
-            "Variables con error",
-            0,
-            2
-        )
-
-    # =================================================
-    # CARD
-    # =================================================
+        self.card_registros = self.crear_card(dashboard, "Registros", 0, 0)
+        self.card_errores = self.crear_card(dashboard, "Errores", 0, 1)
+        self.card_variables = self.crear_card(dashboard, "Variables", 0, 2)
 
     def crear_card(self, parent, titulo, valor, columna):
 
-        card = ctk.CTkFrame(
-            parent,
-            fg_color=COLOR_CARD,
-            corner_radius=15,
-            height=120
-        )
+        card = ctk.CTkFrame(parent, fg_color=COLOR_CARD, corner_radius=12)
 
-        card.grid(
-            row=0,
-            column=columna,
-            sticky="ew",
-            padx=10
-        )
+        card.grid(row=0, column=columna, sticky="ew", padx=8, pady=5)
 
-        label_titulo = ctk.CTkLabel(
+        ctk.CTkLabel(
             card,
             text=titulo,
-            font=(FONT, 15),
+            font=(FONT, 13),
             text_color=COLOR_GRIS
-        )
-
-        label_titulo.pack(anchor="w", padx=20, pady=(20, 5))
+        ).pack(anchor="w", padx=15, pady=(10, 2))
 
         label_valor = ctk.CTkLabel(
             card,
             text=str(valor),
-            font=(FONT, 32, "bold"),
+            font=(FONT, 26, "bold"),
             text_color=COLOR_PRINCIPAL
         )
-
-        label_valor.pack(anchor="w", padx=20)
+        label_valor.pack(anchor="w", padx=15, pady=(0, 10))
 
         return label_valor
 
-    # =================================================
+    # =========================
     # TABLA
-    # =================================================
-
+    # =========================
     def crear_tabla(self):
 
-        frame = ctk.CTkFrame(
-            self,
-            fg_color=COLOR_CARD,
-            corner_radius=15
-        )
-
-        frame.grid(
-            row=2,
-            column=0,
-            sticky="nsew",
-            padx=20,
-            pady=(0, 10)
-        )
+        frame = ctk.CTkFrame(self, fg_color=COLOR_CARD, corner_radius=12)
+        frame.grid(row=2, column=0, sticky="nsew", padx=20, pady=(5, 10))
 
         frame.grid_rowconfigure(1, weight=1)
         frame.grid_columnconfigure(0, weight=1)
 
         # TOPBAR
-        topbar = ctk.CTkFrame(
-            frame,
-            fg_color="transparent"
-        )
+        topbar = ctk.CTkFrame(frame, fg_color="transparent")
+        topbar.grid(row=0, column=0, sticky="ew", padx=15, pady=12)
 
-        topbar.grid(
-            row=0,
-            column=0,
-            sticky="ew",
-            padx=20,
-            pady=20
-        )
-
-        # BOTON CARGAR
-        btn_cargar = ctk.CTkButton(
+        # BOTONES
+        ctk.CTkButton(
             topbar,
-            text="📂 Seleccionar Excel",
+            text="Seleccionar Excel",
+            width=180,
+            height=36,
             fg_color=COLOR_PRINCIPAL,
             hover_color=COLOR_SECUNDARIO,
-            height=42,
-            width=220,
-            font=(FONT, 14, "bold"),
             command=self.cargar_archivo
-        )
+        ).pack(side="left", padx=5)
 
-        btn_cargar.pack(side="left", padx=5)
-
-        # BOTON EXPORTAR
-        btn_exportar = ctk.CTkButton(
+        ctk.CTkButton(
             topbar,
-            text="⬇ Descargar errores",
-            fg_color="#1F6AA5",
+            text="Exportar",
+            width=120,
+            height=36,
+            fg_color=COLOR_ACENTO,
             hover_color="#144870",
-            height=42,
-            width=220,
-            font=(FONT, 14, "bold"),
             command=self.exportar_excel
-        )
-
-        btn_exportar.pack(side="left", padx=5)
+        ).pack(side="left", padx=5)
 
         # BUSCADOR
         self.entry_buscar = ctk.CTkEntry(
             topbar,
-            placeholder_text="Buscar variable...",
-            width=250,
-            height=40
+            placeholder_text="Buscar...",
+            width=220,
+            height=34
         )
-
         self.entry_buscar.pack(side="right")
 
         # TABLA
-        columnas = ("ID_CAT_ENCUESTAS_INFO", "vector", "variable", "mensaje")
+        columnas = ("ID", "Vector", "Variable", "Mensaje")
 
-        self.tabla = ttk.Treeview(
-            frame,
-            columns=columnas,
-            show="headings"
-        )
+        self.tabla = ttk.Treeview(frame, columns=columnas, show="headings")
 
         for col in columnas:
             self.tabla.heading(col, text=col)
 
-        self.tabla.column("ID_CAT_ENCUESTAS_INFO", width=120)
-        self.tabla.column("vector", width=120)
-        self.tabla.column("variable", width=220)
-        self.tabla.column("mensaje", width=650)
+        self.tabla.column("ID", width=120)
+        self.tabla.column("Vector", width=120)
+        self.tabla.column("Variable", width=200)
+        self.tabla.column("Mensaje", width=500)
 
-        scrollbar = ttk.Scrollbar(
-            frame,
-            orient="vertical",
-            command=self.tabla.yview
-        )
+        self.tabla.grid(row=1, column=0, sticky="nsew", padx=(15, 0), pady=(0, 10))
 
-        self.tabla.configure(
-            yscrollcommand=scrollbar.set
-        )
+        scrollbar = ttk.Scrollbar(frame, orient="vertical", command=self.tabla.yview)
+        scrollbar.grid(row=1, column=1, sticky="ns", pady=(0, 10))
 
-        self.tabla.grid(
-            row=1,
-            column=0,
-            sticky="nsew",
-            padx=(20,0),
-            pady=(0,10)
-        )
+        self.tabla.configure(yscrollcommand=scrollbar.set)
 
-        scrollbar.grid(
-            row=1,
-            column=1,
-            sticky="ns",
-            pady=(0,10)
-        )
+        # FOOTER INTERNO
+        bottom = ctk.CTkFrame(frame, fg_color="transparent")
+        bottom.grid(row=2, column=0, sticky="ew", padx=15, pady=(0, 10))
 
-        # ESTADO
         self.label_estado = ctk.CTkLabel(
-            frame,
+            bottom,
             text="Esperando archivo...",
-            font=(FONT, 13),
-            text_color=COLOR_GRIS
-        )
-
-        self.label_estado.grid(
-            row=2,
-            column=0,
-            sticky="w",
-            padx=25,
-            pady=(0,10)
-        )
-
-        # PROGRESSBAR
-        self.progress = ctk.CTkProgressBar(frame)
-
-        self.progress.grid(
-            row=3,
-            column=0,
-            sticky="ew",
-            padx=20,
-            pady=(0,20)
-        )
-
-        self.progress.set(0)
-
-    # =================================================
-    # FOOTER
-    # =================================================
-
-    def crear_footer(self):
-
-        footer = ctk.CTkLabel(
-            self,
-            text="INEGI • Sistema de Validación • Versión 1.0",
             font=(FONT, 12),
             text_color=COLOR_GRIS
         )
+        self.label_estado.pack(side="left")
 
-        footer.grid(
-            row=3,
-            column=0,
-            pady=(0,10)
-        )
+        self.progress = ctk.CTkProgressBar(bottom)
+        self.progress.pack(side="right", fill="x", expand=True, padx=10)
+        self.progress.set(0)
 
-    # =================================================
+    # =========================
+    # FOOTER
+    # =========================
+    def crear_footer(self):
+
+        ctk.CTkLabel(
+            self,
+            text="INEGI • Sistema de Validación V1.0",
+            font=(FONT, 11),
+            text_color=COLOR_GRIS
+        ).grid(row=3, column=0, pady=(0, 8))
+
+    # =========================
     # CARGAR ARCHIVO
-    # =================================================
-
+    # =========================
     def cargar_archivo(self):
 
         ruta = filedialog.askopenfilename(
@@ -328,101 +190,55 @@ class ValidacionView(ctk.CTkFrame):
         if not ruta:
             return
 
-        self.label_estado.configure(
-            text="Procesando archivo..."
-        )
+        self.label_estado.configure(text="Procesando archivo...")
+        self.progress.set(0.3)
 
         hilo = threading.Thread(
             target=self.procesar_archivo,
             args=(ruta,),
             daemon=True
         )
-
         hilo.start()
 
-    # =================================================
+    # =========================
     # PROCESAR
-    # =================================================
-
+    # =========================
     def procesar_archivo(self, ruta):
 
         try:
-
             df, df_errores = validar_archivo(ruta)
 
-            self.after(
-                0,
-                lambda: self.finalizar_proceso(
-                    df,
-                    df_errores
-                )
-            )
+            self.after(0, lambda: self.finalizar_proceso(df, df_errores))
 
         except Exception as e:
+            self.after(0, lambda: messagebox.showerror("Error", str(e)))
 
-            error_msg = f"Error al procesar el archivo:\n{str(e)}"
-
-            self.after(
-                0,
-                lambda: messagebox.showerror(
-                    "Error",
-                    error_msg
-                )
-            )
-
-    # =================================================
+    # =========================
     # FINALIZAR
-    # =================================================
-
+    # =========================
     def finalizar_proceso(self, df, df_errores):
 
         self.df_errores = df_errores
-
         self.actualizar_tabla()
 
-        total_registros = len(df)
-        total_errores = len(df_errores)
+        self.card_registros.configure(text=str(len(df)))
+        self.card_errores.configure(text=str(len(df_errores)))
 
-        total_variables = 0
-
-        if not df_errores.empty:
-
-            total_variables = df_errores["variable"].nunique()
-
-        self.card_registros.configure(
-            text=str(total_registros)
-        )
-
-        self.card_errores.configure(
-            text=str(total_errores)
-        )
-
-        self.card_variables.configure(
-            text=str(total_variables)
-        )
+        total_vars = df_errores["variable"].nunique() if not df_errores.empty else 0
+        self.card_variables.configure(text=str(total_vars))
 
         self.progress.set(1)
+        self.label_estado.configure(text=f"Errores encontrados: {len(df_errores)}")
 
-        self.label_estado.configure(
-            text=f"Errores encontrados: {total_errores}"
-        )
-
-        messagebox.showinfo(
-            "Proceso terminado",
-            f"Validación completada\nErrores encontrados: {total_errores}"
-        )
-
-    # =================================================
-    # ACTUALIZAR TABLA
-    # =================================================
-
+    # =========================
+    # TABLA
+    # =========================
     def actualizar_tabla(self):
 
         for row in self.tabla.get_children():
             self.tabla.delete(row)
 
         for _, fila in self.df_errores.iterrows():
-
             self.tabla.insert(
                 "",
                 "end",
@@ -434,35 +250,19 @@ class ValidacionView(ctk.CTkFrame):
                 )
             )
 
-    # =================================================
+    # =========================
     # EXPORTAR
-    # =================================================
-
+    # =========================
     def exportar_excel(self):
 
         if self.df_errores.empty:
-
-            messagebox.showwarning(
-                "Sin datos",
-                "No existen errores para exportar"
-            )
-
+            messagebox.showwarning("Sin datos", "No hay errores")
             return
 
-        ruta = filedialog.asksaveasfilename(
-            defaultextension=".xlsx",
-            filetypes=[("Excel", "*.xlsx")]
-        )
+        ruta = filedialog.asksaveasfilename(defaultextension=".xlsx")
 
         if not ruta:
             return
 
-        self.df_errores.to_excel(
-            ruta,
-            index=False
-        )
-
-        messagebox.showinfo(
-            "Exportado",
-            "Archivo exportado correctamente"
-        )
+        self.df_errores.to_excel(ruta, index=False)
+        messagebox.showinfo("Exportado", "Archivo exportado correctamente")
