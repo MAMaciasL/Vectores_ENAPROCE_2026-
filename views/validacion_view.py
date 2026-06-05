@@ -36,15 +36,15 @@ class ValidacionView(ctk.CTkFrame):
         ctk.CTkLabel(
             header,
             text="Validador Vectores ENAPROCE",
-            font=(FONT, 22, "bold"),
-            text_color=COLOR_TEXTO
+            font=(FONT, 28, "bold"),
+            text_color=COLOR_TITULOS
         ).pack(anchor="w")
 
         ctk.CTkLabel(
             header,
-            text="Carga un archivo Excel para validar información",
-            font=(FONT, 13),
-            text_color=COLOR_GRIS
+            text="Carga un archivo de Excel para validar los vectores y variables",
+            font=(FONT, 18, "arial"),
+            text_color=COLOR_TITULOS
         ).pack(anchor="w")
 
     # =========================
