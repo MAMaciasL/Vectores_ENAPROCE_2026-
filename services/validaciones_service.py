@@ -1,56 +1,34 @@
 import pandas as pd
-
 from services.rules.loader import cargar_vectores
 from services.rules.engine import ejecutar_validaciones
 
 
 def validar_archivo(ruta):
 
-    #print("COLUMNAS DF:")
-    #print(df.columns.tolist())
+    # ✅ leer archivo SIN cambiar nada
+    df = pd.read_excel(ruta)
+    df.columns = df.columns.str.strip()
 
-    try:
-        print("Leyendo archivo:", ruta)
-
-    # Leer archivo
-        df = pd.read_excel(ruta)
-        print("Archivo leído exitosamente. Columnas detectadas:")
-
-
-        df.columns = df.columns.str.strip().str.upper()
-        df = df.where(pd.notnull(df), None)
-        print("✅ Columnas cargadas:")
-        #print(df.columns.tolist())
-
-    
-    except Exception as e:
-            print("❌ ERROR LEYENDO EXCEL:")
-            print(str(e))
-            raise e
-
-
-    # Cargar vectores
+    # ✅ vectores originales
     vectores = cargar_vectores("data/Vectores_Enaproce_2026_220526.xlsx")
 
-    # Ejecutar validaciones
+    # ✅ ejecutar motor original
     resultados = ejecutar_validaciones(df, vectores)
 
-    lista_errores = []
+    # ✅ convertir a formato tabla UI
+    lista = []
 
-    # Recorrer resultados
-    for item in resultados:
-        id_encuesta = item.get("ID_CAT_ENCUESTAS_INFO", "N/A")
+    for r in resultados:
+        lista.append({
+            "ID_CAT_ENCUESTAS_INFO": r["ID"],
+            "vector": r["VECTOR"],
+            "variable": r["ERROR"],  # 👈 aquí va la expresión
+            "mensaje": "Error de validación"
+        })
 
-        for e in item.get("errores", []):
-            lista_errores.append({
-                "ID_CAT_ENCUESTAS_INFO": id_encuesta,
-                "vector": e.get("vector", "N/A"),
-                "variable": e.get("variable", "N/A"),
-                "mensaje": e.get("mensaje", "Error detectado")
-            })
+    df_errores = pd.DataFrame(lista)
 
-    df_errores = pd.DataFrame(lista_errores)
-
+    # asegurar columnas
     columnas = ["ID_CAT_ENCUESTAS_INFO", "vector", "variable", "mensaje"]
     for col in columnas:
         if col not in df_errores.columns:

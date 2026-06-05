@@ -8,15 +8,31 @@ def evaluar_condicion(row, condicion):
     except:
         return False
 
+
 def ejecutar_validaciones(df, vectores):
 
     resultados = []
 
+    # =========================
+    # DETECTAR COLUMNAS CLAVE
+    # =========================
+    col_algoritmo = None
+    col_precond = None
+
+    for col in vectores.columns:
+
+        col_upper = col.upper().strip()
+
+        if "ALGORITMO" in col_upper:
+            col_algoritmo = col
+
+        if "PRECOND" in col_upper or "FILTRO" in col_upper:
+            col_precond = col
+
+    # =========================
+    # LOOP PRINCIPAL
+    # =========================
     for _, row in df.iterrows():
-
-       #print(f"Procesando encuesta ID: {row.get('ID_CAT_ENCUESTAS_INFO', 'N/A')}")
-
-        errores_fila = []
 
         id_encuesta = row.get("ID_CAT_ENCUESTAS_INFO")
 
@@ -29,55 +45,43 @@ def ejecutar_validaciones(df, vectores):
 
             nombre_vector = v.get("NOMBRE VECTOR 2026")
 
-            precond_raw = v.get("FILTRO / PRECONDICIÓN\nENAPROCE 2026")
-            algoritmo_raw = v.get("ALGORITMO \n (valor teórico)\nENAPROCE 2026")
+            #Obtener textos correctamente
+            precond_raw = v.get(col_precond)
+            algoritmo_raw = v.get(col_algoritmo)
 
+            #Transformar
             precond = transformar_condicion(precond_raw)
             algoritmo = transformar_condicion(algoritmo_raw)
 
-            variable = "N/A"
-            if algoritmo:
-                import re
-                vars_detectadas = re.findall(r'P[A-Z0-9_]+', algoritmo)
-                if vars_detectadas:
-                    variable = vars_detectadas[0]
+            # =========================
+            # DEBUG
+            # =========================
+            #print("---- DEBUG ----")
+            #print("ID:", id_encuesta)
+            #print("VECTOR:", nombre_vector)
+            #print("PRECOND:", precond)
+            #print("ALGORITMO:", algoritmo)
+            #print("----------------")
 
-            # -----------------------------
+            # =========================
             # PRECONDICIÓN
-            # -----------------------------
+            # =========================
             if precond:
                 if not evaluar_condicion(row, precond):
                     continue
 
-            # -----------------------------
+            # =========================
             # ERROR
-            # -----------------------------
+            # =========================
             if algoritmo:
-
-                
                 if evaluar_condicion(row, algoritmo):
-                    print("ID:", id_encuesta)
-                    print("Expr:", algoritmo)
-                    print("Valor:", row.get(variable))
-                    print("Resultados:", resultados)
-                    print("------")
 
-                    if resultados:
-                        print ("Error detectado")
+                    #print("🚨 ERROR DETECTADO")
 
-                    errores_fila.append({
-                        "vector": nombre_vector,
-                        "variable": variable,
-                        "mensaje": "Error de validación"
+                    resultados.append({
+                        "ID": id_encuesta,
+                        "VECTOR": nombre_vector,
+                        "ERROR": algoritmo
                     })
-
-        if errores_fila:
-            resultados.append({
-                "ID_CAT_ENCUESTAS_INFO": id_encuesta,
-                "errores": errores_fila
-            })
-
-        #print("=== FILAS EN DF ===", len(df))
-        #print("=== FILAS EN VECTORES ===", len(vectores))
 
     return resultados
