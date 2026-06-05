@@ -13,15 +13,21 @@ def validar_archivo(ruta):
         print("Leyendo archivo:", ruta)
 
     # Leer archivo
-    df = pd.read_excel(ruta)
-    print("Archivo leído exitosamente. Columnas detectadas:")
+        df = pd.read_excel(ruta)
+        print("Archivo leído exitosamente. Columnas detectadas:")
 
 
+        df.columns = df.columns.str.strip().str.upper()
+        df = df.where(pd.notnull(df), None)
+        print("✅ Columnas cargadas:")
+        #print(df.columns.tolist())
 
+    
+    except Exception as e:
+            print("❌ ERROR LEYENDO EXCEL:")
+            print(str(e))
+            raise e
 
-
-
-    df.columns = df.columns.str.strip().str.upper()
 
     # Cargar vectores
     vectores = cargar_vectores("data/Vectores_Enaproce_2026_220526.xlsx")

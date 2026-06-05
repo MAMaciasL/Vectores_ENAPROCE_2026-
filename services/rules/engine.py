@@ -53,7 +53,17 @@ def ejecutar_validaciones(df, vectores):
             # ERROR
             # -----------------------------
             if algoritmo:
+
+                
                 if evaluar_condicion(row, algoritmo):
+                    print("ID:", id_encuesta)
+                    print("Expr:", algoritmo)
+                    print("Valor:", row.get(variable))
+                    print("Resultados:", resultados)
+                    print("------")
+
+                    if resultados:
+                        print ("Error detectado")
 
                     errores_fila.append({
                         "vector": nombre_vector,
