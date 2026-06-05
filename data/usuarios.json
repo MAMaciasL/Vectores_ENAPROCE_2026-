@@ -1,0 +1,15 @@
+{
+    "Admin": {
+        "password":
+        "Admin12345*",
+        "rol": "Admin"
+    },
+    "Analista": {
+        "password": "Analista12345*",
+        "rol": "Analista"
+    },
+    "Supervisor": {
+        "password": "Supervisor12345*",
+        "rol": "Supervisor"
+    }
+}
