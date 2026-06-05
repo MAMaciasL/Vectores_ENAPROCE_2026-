@@ -32,8 +32,6 @@ class LoginView(ctk.CTkFrame):
 
         if valido:
 
-            print("Rol:", data["rol"])
-
             self.destroy()
 
             self.master.geometry("1400x800")

@@ -43,7 +43,7 @@ class ValidacionView(ctk.CTkFrame):
         ctk.CTkLabel(
             header,
             text="Carga un archivo de Excel para validar los vectores y variables",
-            font=(FONT, 18, "arial"),
+            font=("Arial", 18),
             text_color=COLOR_TITULOS
         ).pack(anchor="w")
 
@@ -211,7 +211,8 @@ class ValidacionView(ctk.CTkFrame):
             self.after(0, lambda: self.finalizar_proceso(df, df_errores))
 
         except Exception as e:
-            self.after(0, lambda: messagebox.showerror("Error", str(e)))
+            error_msg = str(e)
+            self.after(0, lambda: messagebox.showerror("Error", error_msg))
 
     # =========================
     # FINALIZAR

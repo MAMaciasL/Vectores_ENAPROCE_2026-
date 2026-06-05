@@ -5,8 +5,21 @@ from services.rules.engine import ejecutar_validaciones
 
 
 def validar_archivo(ruta):
+
+    #print("COLUMNAS DF:")
+    #print(df.columns.tolist())
+
+    try:
+        print("Leyendo archivo:", ruta)
+
     # Leer archivo
     df = pd.read_excel(ruta)
+    print("Archivo leído exitosamente. Columnas detectadas:")
+
+
+
+
+
 
     df.columns = df.columns.str.strip().str.upper()
 
