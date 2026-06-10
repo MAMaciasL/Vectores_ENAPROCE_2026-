@@ -14,7 +14,7 @@ def ejecutar_validaciones(df, vectores):
     resultados = []
 
     # =========================
-    # DETECTAR COLUMNAS CLAVE
+    # DETECTAR COLUMNAS
     # =========================
     col_algoritmo = None
     col_precond = None

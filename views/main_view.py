@@ -96,7 +96,7 @@ class MainView(ctk.CTkFrame):
 
         self.label_titulo.grid(row=0, column=0, sticky="w", padx=20)
 
-        # BOTON USUARIO / SALIR
+        # BOTON SALIR
         ctk.CTkButton(
             self.header,
             text="Cerrar sesión",
