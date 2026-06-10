@@ -26,13 +26,16 @@ class HistorialView(ctk.CTkFrame):
         for col in ("fecha", "archivo", "registros", "errores"):
             self.tabla.heading(col, text=col)
 
-        self.tabla.pack(fill="both", expand=True, padx=10, pady=10)
+        self.tabla.pack(fill="both", expand=True)
 
         self.cargar()
 
     def cargar(self):
 
         df = obtener_historial()
+
+        for row in self.tabla.get_children():
+            self.tabla.delete(row)
 
         for _, fila in df.iterrows():
             self.tabla.insert("", "end", values=tuple(fila))

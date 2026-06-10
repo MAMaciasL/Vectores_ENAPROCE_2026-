@@ -4,29 +4,25 @@ from datetime import datetime
 
 RUTA = "data/historial.csv"
 
+def guardar_historial(ruta_archivo, total_registros, total_errores):
 
-def guardar_historial(nombre_archivo, total, errores):
-
-    os.makedirs("data", exist_ok=True)
-
-    registro = {
-        "fecha": datetime.now().strftime("%Y-%m-%d %H:%M"),
-        "archivo": nombre_archivo,
-        "registros": total,
-        "errores": errores
-    }
-
-    df = pd.DataFrame([registro])
+    nuevo = pd.DataFrame([{
+        "archivo": ruta_archivo,
+        "fecha": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+        "registros": total_registros,
+        "errores": total_errores
+    }])
 
     if os.path.exists(RUTA):
-        df.to_csv(RUTA, mode="a", header=False, index=False)
+        df = pd.read_csv(RUTA)
+        df = pd.concat([df, nuevo], ignore_index=True)
     else:
-        df.to_csv(RUTA, index=False)
+        df = nuevo
+
+    df.to_csv(RUTA, index=False)
 
 
 def obtener_historial():
-
     if os.path.exists(RUTA):
         return pd.read_csv(RUTA)
-
-    return pd.DataFrame()
+    return pd.DataFrame(columns=["archivo", "fecha", "registros", "errores"])

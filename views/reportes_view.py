@@ -1,6 +1,5 @@
 import customtkinter as ctk
-import pandas as pd
-from config import *
+from services.app_state import AppState
 
 
 class ReportesView(ctk.CTkFrame):
@@ -8,34 +7,28 @@ class ReportesView(ctk.CTkFrame):
     def __init__(self, parent):
         super().__init__(parent)
 
-        self.configure(fg_color="transparent")
-
-        ctk.CTkLabel(
-            self,
-            text="Reportes",
-            font=(FONT, 20, "bold")
-        ).pack(pady=10)
+        ctk.CTkLabel(self, text="Reportes", font=("Arial", 20)).pack()
 
         self.texto = ctk.CTkTextbox(self, width=600, height=400)
-        self.texto.pack(pady=10)
+        self.texto.pack()
 
-    def generar(self, df_errores):
+        self.generar()
 
-        if df_errores.empty:
+    def generar(self):
+
+        df = AppState.resultados_actuales
+
+        if df is None or df.empty:
             self.texto.insert("0.0", "Sin errores")
             return
 
-        # TOP VECTORES
-        top_vectores = df_errores["vector"].value_counts()
+        vectores = df["vector"].value_counts()
+        variables = df["variable"].value_counts()
 
-        # TOP VARIABLES
-        top_vars = df_errores["variable"].value_counts()
+        txt = "TOP VECTORES\n\n"
+        txt += str(vectores.head(10)) + "\n\n"
 
-        reporte = "=== TOP VECTORES ===\n"
-        reporte += str(top_vectores.head(10)) + "\n\n"
+        txt += "TOP VARIABLES\n\n"
+        txt += str(variables.head(10))
 
-        reporte += "=== TOP VARIABLES ===\n"
-        reporte += str(top_vars.head(10))
-
-        self.texto.delete("0.0", "end")
-        self.texto.insert("0.0", reporte)
+        self.texto.insert("0.0", txt)

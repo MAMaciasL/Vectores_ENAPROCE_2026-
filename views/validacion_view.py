@@ -2,10 +2,11 @@ import customtkinter as ctk
 from tkinter import filedialog, messagebox, ttk
 import pandas as pd
 import threading
+import tkinter as tk
 
 from config import *
 from services.validaciones_service import validar_archivo
-from services.historial_service import guardar_historial
+from services.app_state import AppState
 
 
 class ValidacionView(ctk.CTkFrame):
@@ -25,8 +26,45 @@ class ValidacionView(ctk.CTkFrame):
         self.crear_tabla()
         self.crear_footer()
 
+        if AppState.resultados_actuales is not None:
+            self.df_errores = AppState.resultados_actuales
+            self.actualizar_tabla()
+
+        self.card_registros.configure(text=str(AppState.total_registros))
+
+        self.card_errores.configure(text=str(AppState.total_errores))
+
+        self.card_variables.configure(text=str(AppState.total_variables))
+
+        self.progress.set(1)
+        self.label_estado.configure(text=f"Errores encontrados: {AppState.total_errores}")
+
     # =========================
-    # HEADER
+    # BUSCADOR
+    # =========================
+    def filtrar(self, texto):
+
+        if AppState.resultados_actuales is None:
+            return
+
+        df = AppState.resultados_actuales
+        base = "E_ENAPROCE_"
+
+        if not texto.startswith(base):
+            texto = base
+            self.entry_buscar.delete(0, "end")
+            self.entry_buscar.insert(0, texto)
+
+        if texto.strip() == base:
+            self.cargar_tabla(df)
+            return
+
+        df_filtrado = df[
+            df["vector"].astype(str).str.contains(texto, case=False, na=False)
+        ]
+
+        self.cargar_tabla(df_filtrado)
+
     # =========================
     def crear_header(self):
 
@@ -48,8 +86,6 @@ class ValidacionView(ctk.CTkFrame):
         ).pack(anchor="w")
 
     # =========================
-    # DASHBOARD
-    # =========================
     def crear_dashboard(self):
 
         dashboard = ctk.CTkFrame(self, fg_color="transparent")
@@ -64,28 +100,14 @@ class ValidacionView(ctk.CTkFrame):
     def crear_card(self, parent, titulo, valor, columna):
 
         card = ctk.CTkFrame(parent, fg_color=COLOR_CARD, corner_radius=12)
-
         card.grid(row=0, column=columna, sticky="ew", padx=8, pady=5)
 
-        ctk.CTkLabel(
-            card,
-            text=titulo,
-            font=(FONT, 13),
-            text_color=COLOR_GRIS
-        ).pack(anchor="w", padx=15, pady=(10, 2))
-
-        label_valor = ctk.CTkLabel(
-            card,
-            text=str(valor),
-            font=(FONT, 26, "bold"),
-            text_color=COLOR_PRINCIPAL
-        )
-        label_valor.pack(anchor="w", padx=15, pady=(0, 10))
+        ctk.CTkLabel(card, text=titulo).pack()
+        label_valor = ctk.CTkLabel(card, text=str(valor))
+        label_valor.pack()
 
         return label_valor
 
-    # =========================
-    # TABLA
     # =========================
     def crear_tabla(self):
 
@@ -95,47 +117,37 @@ class ValidacionView(ctk.CTkFrame):
         frame.grid_rowconfigure(1, weight=1)
         frame.grid_columnconfigure(0, weight=1)
 
-        # TOPBAR
         topbar = ctk.CTkFrame(frame, fg_color="transparent")
         topbar.grid(row=0, column=0, sticky="ew", padx=15, pady=12)
 
-        # BOTONES
-        ctk.CTkButton(
-            topbar,
-            text="Seleccionar Excel",
-            width=180,
-            height=36,
-            fg_color=COLOR_PRINCIPAL,
-            hover_color=COLOR_SECUNDARIO,
-            command=self.cargar_archivo
-        ).pack(side="left", padx=5)
+        ctk.CTkButton(topbar, text="Seleccionar Excel",
+                      width=180, height=36,
+                      fg_color=COLOR_PRINCIPAL,
+                      command=self.cargar_archivo).pack(side="left", padx=5)
 
-        ctk.CTkButton(
-            topbar,
-            text="Exportar",
-            width=120,
-            height=36,
-            fg_color=COLOR_ACENTO,
-            hover_color="#144870",
-            command=self.exportar_excel
-        ).pack(side="left", padx=5)
+        ctk.CTkButton(topbar, text="Exportar",
+                      width=120, height=36,
+                      fg_color=COLOR_ACENTO,
+                      command=self.exportar_excel).pack(side="left", padx=5)
 
-        # BUSCADOR
-        self.entry_buscar = ctk.CTkEntry(
-            topbar,
-            placeholder_text="Buscar...",
-            width=220,
-            height=34
-        )
+        self.entry_buscar = ctk.CTkEntry(topbar, width=220, height=34)
+        self.entry_buscar.insert(0, "E_ENAPROCE_")
         self.entry_buscar.pack(side="right")
 
-        # TABLA
-        columnas = ("ID", "Vector", "Variable", "Mensaje")
+        self.entry_buscar.bind(
+            "<KeyRelease>",
+            lambda e: self.filtrar(self.entry_buscar.get())
+        )
 
+        columnas = ("ID", "Vector", "Variable", "Mensaje")
         self.tabla = ttk.Treeview(frame, columns=columnas, show="headings")
 
         for col in columnas:
-            self.tabla.heading(col, text=col)
+            self.tabla.heading(
+                col,
+                text=col,
+                command=lambda c=col: self.mostrar_filtro(c)
+            )
 
         self.tabla.column("ID", width=120)
         self.tabla.column("Vector", width=120)
@@ -146,80 +158,83 @@ class ValidacionView(ctk.CTkFrame):
 
         scrollbar = ttk.Scrollbar(frame, orient="vertical", command=self.tabla.yview)
         scrollbar.grid(row=1, column=1, sticky="ns", pady=(0, 10))
-
         self.tabla.configure(yscrollcommand=scrollbar.set)
 
-        # FOOTER INTERNO
         bottom = ctk.CTkFrame(frame, fg_color="transparent")
         bottom.grid(row=2, column=0, sticky="ew", padx=15, pady=(0, 10))
 
-        self.label_estado = ctk.CTkLabel(
-            bottom,
-            text="Esperando archivo...",
-            font=(FONT, 12),
-            text_color=COLOR_GRIS
-        )
+        self.label_estado = ctk.CTkLabel(bottom, text="Esperando archivo...")
         self.label_estado.pack(side="left")
 
         self.progress = ctk.CTkProgressBar(bottom)
         self.progress.pack(side="right", fill="x", expand=True, padx=10)
         self.progress.set(0)
 
-    # =========================
-    # FOOTER
-    # =========================
-    def crear_footer(self):
+    def mostrar_filtro(self, columna):
 
-        ctk.CTkLabel(
-            self,
-            text="INEGI • Sistema de Validación V1.0",
-            font=(FONT, 11),
-            text_color=COLOR_GRIS
-        ).grid(row=3, column=0, pady=(0, 8))
-
-    # =========================
-    # CARGAR ARCHIVO
-    # =========================
-    def cargar_archivo(self):
-
-        ruta = filedialog.askopenfilename(
-            title="Seleccionar archivo Excel",
-            filetypes=[("Excel", "*.xlsx")]
-        )
-
-        if not ruta:
+        if AppState.resultados_actuales is None:
             return
 
-        self.label_estado.configure(text="Procesando archivo...")
-        self.progress.set(0.3)
+        df = AppState.resultados_actuales
 
-        hilo = threading.Thread(
-            target=self.procesar_archivo,
-            args=(ruta,),
-            daemon=True
-        )
-        hilo.start()
+        mapa = {
+            "ID": "ID_CAT_ENCUESTAS_INFO",
+            "Vector": "vector",
+            "Variable": "variable",
+            "Mensaje": "mensaje"
+        }
 
-    # =========================
-    # PROCESAR
-    # =========================
-    def procesar_archivo(self, ruta):
+        col_real = mapa[columna]
+        valores = sorted(df[col_real].astype(str).unique())
+
+        menu = tk.Menu(self, tearoff=0)
+        vars_checks = {}
+
+        def limpiar():
+                self.cargar_tabla(df)
+
+        menu.add_command(label="(Todos)", command=lambda: self.cargar_tabla(df))
+        menu.add_separator()
+
+        for v in valores:
+            var = tk.BooleanVar(value=False)
+            vars_checks[v] = var
+
+            menu.add_checkbutton(
+                label=str(v),
+                variable=var
+            )
+
+        menu.add_separator()
+
+        def aplicar():
+
+            seleccionados = [v for v, var in vars_checks.items() if var.get()]
+
+            if not seleccionados:
+                self.cargar_tabla(df)
+            else:
+                filtrado = df[df[col_real].astype(str).isin(seleccionados)]
+                self.cargar_tabla(filtrado)
+
+        menu.add_command(label="Aplicar", command=aplicar)
 
         try:
-            df, df_errores = validar_archivo(ruta)
+            x = self.winfo_pointerx()
+            y = self.winfo_pointery()
+            menu.tk_popup(x, y)
+        finally:
+            menu.grab_release()
 
-            self.after(0, lambda: self.finalizar_proceso(df, df_errores))
-
-        except Exception as e:
-            error_msg = str(e)
-            self.after(0, lambda: messagebox.showerror("Error", error_msg))
-
-    # =========================
-    # FINALIZAR
     # =========================
     def finalizar_proceso(self, df, df_errores):
 
         self.df_errores = df_errores
+        AppState.resultados_actuales = df_errores
+        AppState.total_registros =len(df)
+        AppState.total_errores =len(df_errores)
+        AppState.total_variables = df_errores["variable"].nunique() if not df_errores.empty else 0
+
         self.actualizar_tabla()
 
         self.card_registros.configure(text=str(len(df)))
@@ -228,32 +243,58 @@ class ValidacionView(ctk.CTkFrame):
         total_vars = df_errores["variable"].nunique() if not df_errores.empty else 0
         self.card_variables.configure(text=str(total_vars))
 
+        self.progress.stop()
         self.progress.set(1)
-        self.label_estado.configure(text=f"Errores encontrados: {len(df_errores)}")
 
-    # =========================
-    # TABLA
-    # =========================
     def actualizar_tabla(self):
 
         for row in self.tabla.get_children():
             self.tabla.delete(row)
 
         for _, fila in self.df_errores.iterrows():
-            self.tabla.insert(
-                "",
-                "end",
-                values=(
-                    fila["ID_CAT_ENCUESTAS_INFO"],
-                    fila["vector"],
-                    fila["variable"],
-                    fila["mensaje"]
-                )
-            )
+            self.tabla.insert("", "end", values=(
+                fila["ID_CAT_ENCUESTAS_INFO"],
+                fila["vector"],
+                fila["variable"],
+                fila["mensaje"]
+            ))
+
+    def cargar_tabla(self, df):
+
+        for row in self.tabla.get_children():
+            self.tabla.delete(row)
+
+        for _, fila in df.iterrows():
+            self.tabla.insert("", "end", values=(
+                fila["ID_CAT_ENCUESTAS_INFO"],
+                fila["vector"],
+                fila["variable"],
+                fila["mensaje"]
+            ))
 
     # =========================
-    # EXPORTAR
-    # =========================
+    def cargar_archivo(self):
+
+        ruta = filedialog.askopenfilename(filetypes=[("Excel", "*.xlsx")])
+
+        if not ruta:
+            return
+
+        self.label_estado.configure(text="Procesando archivo...")
+        self.progress.set(0)
+        self.progress.start()
+
+        threading.Thread(
+            target=self.procesar_archivo,
+            args=(ruta,),
+            daemon=True
+        ).start()
+
+    def procesar_archivo(self, ruta):
+
+        df, df_errores = validar_archivo(ruta)
+        self.after(0, lambda: self.finalizar_proceso(df, df_errores))
+
     def exportar_excel(self):
 
         if self.df_errores.empty:
@@ -262,8 +303,13 @@ class ValidacionView(ctk.CTkFrame):
 
         ruta = filedialog.asksaveasfilename(defaultextension=".xlsx")
 
-        if not ruta:
-            return
+        if ruta:
+            self.df_errores.to_excel(ruta, index=False)
+            messagebox.showinfo("Exportado", "Archivo exportado correctamente")
 
-        self.df_errores.to_excel(ruta, index=False)
-        messagebox.showinfo("Exportado", "Archivo exportado correctamente")
+    def crear_footer(self):
+
+        ctk.CTkLabel(
+            self,
+            text="INEGI • Sistema de Validación v1.0"
+        ).grid(row=3, column=0, pady=(0, 8))
