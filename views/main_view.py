@@ -24,6 +24,9 @@ class MainView(ctk.CTkFrame):
         self.crear_container()
 
         self.mostrar_vista("validacion")
+        
+        self.after(2000, self.auto_reload)
+
 
     # =========================
     # SIDEBAR
@@ -158,6 +161,9 @@ class MainView(ctk.CTkFrame):
 
         frame.pack(fill="both", expand=True)
 
+
+        self.nombre_vista_actual = vista
+
     # =========================
     # LOGOUT
     # =========================
@@ -169,3 +175,13 @@ class MainView(ctk.CTkFrame):
 
         login = LoginView(self.master)
         login.pack(fill="both", expand=True)
+
+    def recargar_vista_actual(self):
+
+        if hasattr(self, "vista_actual"):
+
+            self.vista_actual.destroy()
+            self.mostrar_vista(self.nombre_vista_actual)
+            
+            self.after(2000, self.auto_reload)
+

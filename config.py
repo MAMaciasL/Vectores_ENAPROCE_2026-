@@ -4,6 +4,7 @@ COLOR_PRINCIPAL = "#00BFB3"     # Verde INEGI principal
 COLOR_SECUNDARIO = "#003057"    # Verde más claro
 COLOR_ACENTO = "#1F6AA5"        # Azul institucional secundario
 COLOR_RESALTADO = "#967DFF"     # Morado institucional resaltado
+COLOR_TEXTO = "#000000"
 
 COLOR_FONDO = "#F3F4F6"         # Fondo gris muy claro
 COLOR_CARD = "#FFFFFF"          # Blanco

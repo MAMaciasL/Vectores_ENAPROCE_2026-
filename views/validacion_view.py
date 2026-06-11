@@ -4,6 +4,8 @@ import pandas as pd
 import threading
 import tkinter as tk
 
+from sympy import expand, true
+
 from config import *
 from services.validaciones_service import validar_archivo
 from services.app_state import AppState
@@ -60,12 +62,11 @@ class ValidacionView(ctk.CTkFrame):
             return
 
         df_filtrado = df[
-            df["vector"].astype(str).str.contains(texto, case=False, na=False)
+            df["Nombre Vector"].astype(str).str.contains(texto, case=False, na=False)
         ]
 
         self.cargar_tabla(df_filtrado)
 
-    # =========================
     def crear_header(self):
 
         header = ctk.CTkFrame(self, fg_color="transparent")
@@ -74,7 +75,7 @@ class ValidacionView(ctk.CTkFrame):
         ctk.CTkLabel(
             header,
             text="Validador Vectores ENAPROCE",
-            font=(FONT, 28, "bold"),
+            font=(FONT, 24, "bold"),
             text_color=COLOR_TITULOS
         ).pack(anchor="w")
 
@@ -85,7 +86,6 @@ class ValidacionView(ctk.CTkFrame):
             text_color=COLOR_TITULOS
         ).pack(anchor="w")
 
-    # =========================
     def crear_dashboard(self):
 
         dashboard = ctk.CTkFrame(self, fg_color="transparent")
@@ -102,13 +102,20 @@ class ValidacionView(ctk.CTkFrame):
         card = ctk.CTkFrame(parent, fg_color=COLOR_CARD, corner_radius=12)
         card.grid(row=0, column=columna, sticky="ew", padx=8, pady=5)
 
-        ctk.CTkLabel(card, text=titulo).pack()
-        label_valor = ctk.CTkLabel(card, text=str(valor))
-        label_valor.pack()
+        ctk.CTkLabel(card,
+        text=titulo,
+        font=("Arial", 24),
+        text_color=COLOR_TEXTO ).pack(expand=True, pady=(15, 0))
+
+        label_valor = ctk.CTkLabel(
+        card,
+        text=str(valor),
+        font=("Arial", 18),
+        text_color=COLOR_PRINCIPAL)
+        label_valor.pack(expand=True, pady=(5, 15))
 
         return label_valor
 
-    # =========================
     def crear_tabla(self):
 
         frame = ctk.CTkFrame(self, fg_color=COLOR_CARD, corner_radius=12)
@@ -139,7 +146,7 @@ class ValidacionView(ctk.CTkFrame):
             lambda e: self.filtrar(self.entry_buscar.get())
         )
 
-        columnas = ("ID", "Vector", "Variable", "Mensaje")
+        columnas = ("ID", "Nombre Vector", "Variables Involucradas", "Procedimiento")
         self.tabla = ttk.Treeview(frame, columns=columnas, show="headings")
 
         for col in columnas:
@@ -150,9 +157,9 @@ class ValidacionView(ctk.CTkFrame):
             )
 
         self.tabla.column("ID", width=120)
-        self.tabla.column("Vector", width=120)
-        self.tabla.column("Variable", width=200)
-        self.tabla.column("Mensaje", width=500)
+        self.tabla.column("Nombre Vector", width=140)
+        self.tabla.column("Variables Involucradas", width=300)
+        self.tabla.column("Procedimiento", width=700)
 
         self.tabla.grid(row=1, column=0, sticky="nsew", padx=(15, 0), pady=(0, 10))
 
@@ -179,9 +186,9 @@ class ValidacionView(ctk.CTkFrame):
 
         mapa = {
             "ID": "ID_CAT_ENCUESTAS_INFO",
-            "Vector": "vector",
-            "Variable": "variable",
-            "Mensaje": "mensaje"
+            "Nombre Vector": "NOMBRE VECTOR",
+            "Variables Involucradas": "VARIABLES INVOLUCRADAS",
+            "Procedimiento": "PROCEDIMIENTO"
         }
 
         col_real = mapa[columna]
@@ -226,21 +233,20 @@ class ValidacionView(ctk.CTkFrame):
         finally:
             menu.grab_release()
 
-    # =========================
     def finalizar_proceso(self, df, df_errores):
 
         self.df_errores = df_errores
         AppState.resultados_actuales = df_errores
         AppState.total_registros =len(df)
         AppState.total_errores =len(df_errores)
-        AppState.total_variables = df_errores["variable"].nunique() if not df_errores.empty else 0
+        AppState.total_variables = df_errores["Variables Involucradas"].nunique() if not df_errores.empty else 0
 
         self.actualizar_tabla()
 
         self.card_registros.configure(text=str(len(df)))
         self.card_errores.configure(text=str(len(df_errores)))
 
-        total_vars = df_errores["variable"].nunique() if not df_errores.empty else 0
+        total_vars = df_errores["Variables Involucradas"].nunique() if not df_errores.empty else 0
         self.card_variables.configure(text=str(total_vars))
 
         self.progress.stop()
@@ -254,9 +260,9 @@ class ValidacionView(ctk.CTkFrame):
         for _, fila in self.df_errores.iterrows():
             self.tabla.insert("", "end", values=(
                 fila["ID_CAT_ENCUESTAS_INFO"],
-                fila["vector"],
-                fila["variable"],
-                fila["mensaje"]
+                fila["Nombre Vector"],
+                fila["Variables Involucradas"],
+                (str(fila["Procedimiento"]) [:120] + "..." if len(str(fila["Procedimiento"])) > 120 else str(fila["Procedimiento"]))
             ))
 
     def cargar_tabla(self, df):
@@ -267,9 +273,9 @@ class ValidacionView(ctk.CTkFrame):
         for _, fila in df.iterrows():
             self.tabla.insert("", "end", values=(
                 fila["ID_CAT_ENCUESTAS_INFO"],
-                fila["vector"],
-                fila["variable"],
-                fila["mensaje"]
+                fila["Nombre Vector"],
+                fila["Variables Involucradas"],
+                (str(fila["Procedimiento"]) [:120] + "..." if len(str(fila["Procedimiento"])) > 120 else str(fila["Procedimiento"]))
             ))
 
     # =========================
@@ -293,7 +299,12 @@ class ValidacionView(ctk.CTkFrame):
     def procesar_archivo(self, ruta):
 
         df, df_errores = validar_archivo(ruta)
-        self.after(0, lambda: self.finalizar_proceso(df, df_errores))
+
+        self.after(0, lambda:
+        self.progress.set(0.6))
+        self.after(0, lambda:
+        self.finalizar_proceso(df, df_errores))
+        
 
     def exportar_excel(self):
 
@@ -305,7 +316,7 @@ class ValidacionView(ctk.CTkFrame):
 
         if ruta:
             self.df_errores.to_excel(ruta, index=False)
-            messagebox.showinfo("Exportado", "Archivo exportado correctamente")
+            messagebox.showinfo("Exportado", "Archivo exportado correctamente")     
 
     def crear_footer(self):
 

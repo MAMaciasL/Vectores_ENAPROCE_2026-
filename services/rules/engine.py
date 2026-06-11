@@ -13,11 +13,10 @@ def ejecutar_validaciones(df, vectores):
 
     resultados = []
 
-    # =========================
-    # DETECTAR COLUMNAS
-    # =========================
     col_algoritmo = None
     col_precond = None
+    col_variables = None
+    col_procedimiento = None
 
     for col in vectores.columns:
 
@@ -28,6 +27,12 @@ def ejecutar_validaciones(df, vectores):
 
         if "PRECOND" in col_upper or "FILTRO" in col_upper:
             col_precond = col
+
+        if "VARIABLES" in col_upper:
+            col_variables = col
+
+        if "PROCEDIMIENTO" in col_upper:
+            col_procedimiento = col
 
     # =========================
     # LOOP PRINCIPAL
@@ -45,43 +50,37 @@ def ejecutar_validaciones(df, vectores):
 
             nombre_vector = v.get("NOMBRE VECTOR 2026")
 
-            #Obtener textos correctamente
             precond_raw = v.get(col_precond)
             algoritmo_raw = v.get(col_algoritmo)
+            variables_raw = v.get(col_variables)
+            procedimiento_raw = v.get(col_procedimiento)
 
-            #Transformar
+            # transformar
             precond = transformar_condicion(precond_raw)
             algoritmo = transformar_condicion(algoritmo_raw)
 
             # =========================
-            # DEBUG
-            # =========================
-            #print("---- DEBUG ----")
-            #print("ID:", id_encuesta)
-            #print("VECTOR:", nombre_vector)
-            #print("PRECOND:", precond)
-            #print("ALGORITMO:", algoritmo)
-            #print("----------------")
-
-            # =========================
             # PRECONDICIÓN
             # =========================
-            if precond:
-                if not evaluar_condicion(row, precond):
-                    continue
+            if precond and not evaluar_condicion(row, precond):
+                continue
 
             # =========================
-            # ERROR
+            # VALIDACIÓN
             # =========================
-            if algoritmo:
-                if evaluar_condicion(row, algoritmo):
+            if algoritmo and evaluar_condicion(row, algoritmo):
 
-                    #print("🚨 ERROR DETECTADO")
-
-                    resultados.append({
-                        "ID": id_encuesta,
-                        "VECTOR": nombre_vector,
-                        "ERROR": algoritmo
-                    })
+                resultados.append({
+                    "ID": id_encuesta,
+                    "VECTOR": nombre_vector,
+                    "VARIABLES INVOLUCRADAS": (
+                        " | ".join(str(variables_raw).split())
+                        if variables_raw else ""
+                    ),
+                    "PROCEDIMIENTO": (
+                        str(procedimiento_raw).replace("\n", ", ").strip()
+                        if procedimiento_raw else ""
+                    )
+                })
 
     return resultados

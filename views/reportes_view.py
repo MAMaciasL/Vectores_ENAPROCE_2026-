@@ -22,7 +22,7 @@ class ReportesView(ctk.CTkFrame):
             self.texto.insert("0.0", "Sin errores")
             return
 
-        vectores = df["vector"].value_counts()
+        vectores = df["Nombre Vector"].value_counts()
         variables = df["variable"].value_counts()
 
         txt = "TOP VECTORES\n\n"
