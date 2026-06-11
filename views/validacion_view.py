@@ -4,8 +4,6 @@ import pandas as pd
 import threading
 import tkinter as tk
 
-from sympy import expand, true
-
 from config import *
 from services.validaciones_service import validar_archivo
 from services.app_state import AppState
@@ -38,6 +36,7 @@ class ValidacionView(ctk.CTkFrame):
 
         self.card_variables.configure(text=str(AppState.total_variables))
 
+        self.cargando = False
         self.progress.set(1)
         self.label_estado.configure(text=f"Errores encontrados: {AppState.total_errores}")
 
@@ -74,14 +73,15 @@ class ValidacionView(ctk.CTkFrame):
 
         ctk.CTkLabel(
             header,
-            text="Validador Vectores ENAPROCE",
+            text="Validador de Vectores para Enaproce 2026",
             font=(FONT, 24, "bold"),
-            text_color=COLOR_TITULOS
+            text_color=COLOR_TITULOS,
+            
         ).pack(anchor="w")
 
         ctk.CTkLabel(
             header,
-            text="Carga un archivo de Excel para validar los vectores y variables",
+            text="Carga el archivo vaciado de Excel para validar los vectores",
             font=("Arial", 18),
             text_color=COLOR_TITULOS
         ).pack(anchor="w")
@@ -110,7 +110,7 @@ class ValidacionView(ctk.CTkFrame):
         label_valor = ctk.CTkLabel(
         card,
         text=str(valor),
-        font=("Arial", 18),
+        font=("Arial", 20),
         text_color=COLOR_PRINCIPAL)
         label_valor.pack(expand=True, pady=(5, 15))
 
@@ -249,6 +249,7 @@ class ValidacionView(ctk.CTkFrame):
         total_vars = df_errores["Variables Involucradas"].nunique() if not df_errores.empty else 0
         self.card_variables.configure(text=str(total_vars))
 
+        self.cargando = False
         self.progress.stop()
         self.progress.set(1)
 
@@ -287,6 +288,7 @@ class ValidacionView(ctk.CTkFrame):
             return
 
         self.label_estado.configure(text="Procesando archivo...")
+        self.cargando = True
         self.progress.set(0)
         self.progress.start()
 

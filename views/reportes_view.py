@@ -23,7 +23,7 @@ class ReportesView(ctk.CTkFrame):
             return
 
         vectores = df["Nombre Vector"].value_counts()
-        variables = df["variable"].value_counts()
+        variables = df["Variables Involucradas"].value_counts()
 
         txt = "TOP VECTORES\n\n"
         txt += str(vectores.head(10)) + "\n\n"

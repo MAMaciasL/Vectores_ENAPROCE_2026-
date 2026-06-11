@@ -17,16 +17,13 @@ class MainView(ctk.CTkFrame):
 
         # GRID BASE
         self.grid_columnconfigure(1, weight=1)
-        self.grid_rowconfigure(1, weight=1)
+        self.grid_rowconfigure(0, weight=1)
 
         self.crear_sidebar()
-        self.crear_header()
         self.crear_container()
 
         self.mostrar_vista("validacion")
         
-        self.after(2000, self.auto_reload)
-
 
     # =========================
     # SIDEBAR
@@ -76,38 +73,23 @@ class MainView(ctk.CTkFrame):
 
             self.botones[key] = btn
 
-    # =========================
-    # HEADER SUPERIOR
-    # =========================
-    def crear_header(self):
+        user_frame = ctk.CTkFrame(self.sidebar, fg_color="transparent")
+        user_frame.pack(side="bottom", fill="x", pady=20)
 
-        self.header = ctk.CTkFrame(
-            self,
-            height=60,
-            fg_color=COLOR_CARD
-        )
-        self.header.grid(row=0, column=1, sticky="ew")
+        ctk.CTkLabel(
+        user_frame,
+        text="👤 Admin",
+        font=(FONT, 14),
+        text_color="white"
+        ).pack(anchor="center", padx=20, pady=5)
 
-        self.header.grid_columnconfigure(0, weight=1)
-
-        self.label_titulo = ctk.CTkLabel(
-            self.header,
-            text="Validación",
-            font=(FONT, 18, "bold"),
-            text_color=COLOR_TEXTO
-        )
-
-        self.label_titulo.grid(row=0, column=0, sticky="w", padx=20)
-
-        # BOTON SALIR
         ctk.CTkButton(
-            self.header,
-            text="Cerrar sesión",
-            width=120,
-            fg_color="transparent",
-            text_color=COLOR_PRINCIPAL,
-            command=self.logout
-        ).grid(row=0, column=1, padx=20)
+        user_frame,
+        text="Cerrar sesión",
+        fg_color=COLOR_OK,
+        hover_color=COLOR_ERROR,
+        command=self.logout
+        ).pack(fill="x", padx=20)
 
     # =========================
     # CONTENEDOR VISTAS
@@ -118,7 +100,7 @@ class MainView(ctk.CTkFrame):
             self,
             fg_color="transparent"
         )
-        self.container.grid(row=1, column=1, sticky="nsew")
+        self.container.grid(row=0, column=1, sticky="nsew")
 
         self.vistas = {}
 
@@ -138,16 +120,6 @@ class MainView(ctk.CTkFrame):
         # activar botón
         self.botones[vista].configure(fg_color="#0B6E4F")
 
-        # cambiar titulo
-        titulos = {
-            "validacion": "Validación",
-            "reportes": "Reportes",
-            "historial": "Historial",
-            "config": "Configuración"
-        }
-
-        self.label_titulo.configure(text=titulos[vista])
-
         # cargar vista
         if vista == "validacion":
             frame = ValidacionView(self.container)
@@ -162,7 +134,6 @@ class MainView(ctk.CTkFrame):
         frame.pack(fill="both", expand=True)
 
 
-        self.nombre_vista_actual = vista
 
     # =========================
     # LOGOUT
@@ -175,13 +146,3 @@ class MainView(ctk.CTkFrame):
 
         login = LoginView(self.master)
         login.pack(fill="both", expand=True)
-
-    def recargar_vista_actual(self):
-
-        if hasattr(self, "vista_actual"):
-
-            self.vista_actual.destroy()
-            self.mostrar_vista(self.nombre_vista_actual)
-            
-            self.after(2000, self.auto_reload)
-
