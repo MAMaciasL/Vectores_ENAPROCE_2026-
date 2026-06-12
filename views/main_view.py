@@ -1,10 +1,12 @@
 import customtkinter as ctk
 from config import *
 from views.validacion_view import ValidacionView
-from views.reportes_view import ReportesView
 from views.historial_view import HistorialView
 from views.config_view import ConfigView
+from views.reportes_view import ReportesView
+from services.app_state import AppState, cargar_historial
 
+AppState.historial_reportes = cargar_historial()
 
 
 class MainView(ctk.CTkFrame):
@@ -124,16 +126,16 @@ class MainView(ctk.CTkFrame):
         if vista == "validacion":
             frame = ValidacionView(self.container)
 
-        elif vista == "reportes":
-            frame = ReportesView(self.container)
         elif vista == "historial":
             frame = HistorialView(self.container)
+
         elif vista == "config":
             frame = ConfigView(self.container)
 
+        elif vista == "reportes":
+            frame = ReportesView(self.container)
+
         frame.pack(fill="both", expand=True)
-
-
 
     # =========================
     # LOGOUT

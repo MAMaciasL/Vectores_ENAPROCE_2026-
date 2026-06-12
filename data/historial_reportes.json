@@ -1,0 +1,74 @@
+[
+    {
+        "fecha": "11/06/2026 16:21",
+        "archivo": "Vaciado_ENAPROCE2026.xlsx",
+        "registros": 12,
+        "errores": 9,
+        "correctos": 3,
+        "tiempo": 0.58
+    },
+    {
+        "fecha": "12/06/2026 10:30",
+        "archivo": "Vaciado_ENAPROCE2026.xlsx",
+        "registros": 12,
+        "errores": 9,
+        "correctos": 3,
+        "tiempo": 0.41
+    },
+    {
+        "fecha": "12/06/2026 10:39",
+        "archivo": "Vaciado_ENAPROCE2026.xlsx",
+        "registros": 12,
+        "errores": 9,
+        "correctos": 3,
+        "tiempo": 0.31
+    },
+    {
+        "fecha": "12/06/2026 10:54",
+        "archivo": "Vaciado_ENAPROCE2026.xlsx",
+        "registros": 12,
+        "errores": 9,
+        "correctos": 3,
+        "tiempo": 0.31
+    },
+    {
+        "fecha": "12/06/2026 11:00",
+        "archivo": "Vaciado_ENAPROCE2026.xlsx",
+        "registros": 12,
+        "errores": 9,
+        "correctos": 3,
+        "tiempo": 0.47
+    },
+    {
+        "fecha": "12/06/2026 11:04",
+        "archivo": "Vaciado_ENAPROCE2026.xlsx",
+        "registros": 12,
+        "errores": 9,
+        "correctos": 3,
+        "tiempo": 0.27
+    },
+    {
+        "fecha": "12/06/2026 11:11",
+        "archivo": "Vaciado_ENAPROCE2026.xlsx",
+        "registros": 12,
+        "errores": 9,
+        "correctos": 3,
+        "tiempo": 0.29
+    },
+    {
+        "fecha": "12/06/2026 14:12",
+        "archivo": "Vaciado_ENAPROCE2026.xlsx",
+        "registros": 12,
+        "errores": 9,
+        "correctos": 3,
+        "tiempo": 0.5
+    },
+    {
+        "fecha": "12/06/2026 15:20",
+        "archivo": "Vaciado_ENAPROCE2026.xlsx",
+        "registros": 12,
+        "errores": 9,
+        "correctos": 3,
+        "tiempo": 0.31
+    }
+]
