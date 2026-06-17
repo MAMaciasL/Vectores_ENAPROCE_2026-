@@ -157,6 +157,8 @@ ________________________________________
 👨‍💻 Autor
 Martin Alejandro Macías Lara
 Enlace de Integración Estadística “C”
+Cristina Sanchez Lara
+Enlace de Integración Estadística "B”
 ________________________________________
 📄 Licencia
 Uso interno / INEGI
