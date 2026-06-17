@@ -154,8 +154,16 @@ class ValidacionView(ctk.CTkFrame):
             lambda e: self.filtrar(self.entry_buscar.get())
         )
 
-        columnas = ("ID", "Nombre Vector", "Variables Involucradas", "Procedimiento")
-        self.tabla = ttk.Treeview(frame, columns=columnas, show="headings")
+        columnas = ("Nombre Vector", "Variables Involucradas", "Procedimiento")
+        self.tabla = ttk.Treeview(frame, columns=columnas, show="tree headings")
+        self.tabla.heading("#0", text="ID")
+        self.tabla.column("#0", width=100)
+
+        
+        self.tabla.column("Nombre Vector", width=120, stretch=False)
+        self.tabla.column("Variables Involucradas", width=180, stretch=False)
+        self.tabla.column("Procedimiento", width=500, stretch=True)
+
 
         for col in columnas:
             self.tabla.heading(col, text=col)
@@ -166,6 +174,13 @@ class ValidacionView(ctk.CTkFrame):
         bottom.grid(row=2, column=0, sticky="ew", padx=15, pady=(0, 10))
 
         bottom.grid_columnconfigure(1, weight=1)
+        
+        scroll_x = ttk.Scrollbar(frame, orient="horizontal", command=self.tabla.xview)
+        self.tabla.configure(xscrollcommand=scroll_x.set)
+        scroll_x.grid(row=3, column=0, sticky="ew", padx=(15,0))
+
+        self.tabla.bind("<<TreeviewSelect>>", self.mostrar_detalle)
+
 
         self.label_estado = ctk.CTkLabel(bottom, text="Esperando archivo...")
         self.label_estado.grid(row=0, column=0, sticky="w")
@@ -200,17 +215,53 @@ class ValidacionView(ctk.CTkFrame):
         self.progress.stop()
         self.progress.set(1)
 
+        self.update_idletasks()
+        
+        self.label_estado.configure(
+            text=f"✅ Finalizado | Registros: {total_registros} | Errores: {total_errores}"
+        )
+
+
     def actualizar_tabla(self):
+
         for row in self.tabla.get_children():
             self.tabla.delete(row)
 
-        for _, fila in self.df_errores.iterrows():
-            self.tabla.insert("", "end", values=(
-                fila["ID_CAT_ENCUESTAS_INFO"],
-                fila["Nombre Vector"],
-                fila["Variables Involucradas"],
-                str(fila["Procedimiento"])
-            ))
+        if self.df_errores.empty:
+            return
+
+        df = self.df_errores.sort_values(
+            by=["ID_CAT_ENCUESTAS_INFO", "Nombre Vector"]
+        )
+
+        grupos = {}
+
+        for _, fila in df.iterrows():
+
+            id_val = fila["ID_CAT_ENCUESTAS_INFO"]
+
+            if id_val not in grupos:
+                grupos[id_val] = self.tabla.insert(
+                    "",
+                    "end",
+                    text=f"ID: {id_val}",
+                    values=("", "", "")
+                )
+
+            self.tabla.insert(
+                grupos[id_val],
+                "end",
+                text="",
+                values=(
+                    fila["Nombre Vector"],
+                    fila["Variables Involucradas"],
+                    fila["Procedimiento"]
+                )
+            )
+
+        for item in self.tabla.get_children():
+            self.tabla.item(item, open=True)
+
 
     def cargar_archivo(self):
         ruta = filedialog.askopenfilename(filetypes=[("Excel", "*.xlsx")])
@@ -219,6 +270,10 @@ class ValidacionView(ctk.CTkFrame):
             return
 
         self.label_estado.configure(text="Procesando archivo...")
+        self.progress.set(0.2)
+        self.progress.start()
+
+        self.update_idletasks()
 
         self.inicio_tiempo = time.time()
         AppState.archivo_actual = ruta.split("/")[-1]
@@ -228,8 +283,6 @@ class ValidacionView(ctk.CTkFrame):
             args=(ruta,),
             daemon=True
         ).start()
-
-
     def procesar_archivo(self, ruta):
     
         resultado = procesar_archivo_completo(ruta)
@@ -278,3 +331,59 @@ class ValidacionView(ctk.CTkFrame):
             text_color=color
         )
 
+    def mostrar_detalle(self, event):
+
+        selected = self.tabla.selection()
+
+        if not selected:
+            return
+
+        item = selected[0]
+
+        valores = self.tabla.item(item, "values")
+
+        if not valores or all(v == "" for v in valores):
+            return
+        
+        id = valores[0]
+        nombre = valores[1]
+        variables = valores[2]
+        procedimiento = valores[3]
+
+        ventana = ctk.CTkToplevel(self)
+        ventana.title("Detalle del error")
+        ventana.geometry("600x400")
+
+        ctk.CTkLabel(
+            ventana, text="ID", font=(FONT, 14, "bold")
+        ).pack(anchor="w", padx=10, pady=(10, 0))
+
+        ctk.CTkLabel(
+            ventana, text=id, wraplength=550
+        ).pack(anchor="w", padx=10)
+
+        ctk.CTkLabel(
+            ventana, text="Nombre Vector", font=(FONT, 14, "bold")
+        ).pack(anchor="w", padx=10, pady=(10, 0))
+
+        ctk.CTkLabel(
+            ventana, text=nombre, wraplength=550
+        ).pack(anchor="w", padx=10)
+
+        ctk.CTkLabel(
+            ventana, text="Variables", font=(FONT, 14, "bold")
+        ).pack(anchor="w", padx=10, pady=(10, 0))
+
+        ctk.CTkLabel(
+            ventana, text=variables, wraplength=550
+        ).pack(anchor="w", padx=10)
+
+        ctk.CTkLabel(
+            ventana, text="Procedimiento", font=(FONT, 14, "bold")
+        ).pack(anchor="w", padx=10, pady=(10, 0))
+
+        textbox = ctk.CTkTextbox(ventana, width=580, height=200)
+        textbox.pack(padx=10, pady=5)
+
+        textbox.insert("1.0", procedimiento)
+        textbox.configure(state="disabled")
