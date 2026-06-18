@@ -46,7 +46,7 @@ def validar_texto(valor):
 
     #if not valor or str(valor).lower() == "nan":
     #    return "Vacío o NAN"
-
+    
     if texto_basura(valor):
         return "Texto basura"
 
@@ -61,6 +61,12 @@ def validar_texto(valor):
 
     #if len(valor.split()) <= 1:
     #    return "Texto insuficiente"
+
+    if es_ruido_semantico(valor):
+        return "Texto irrelevante"
+
+    if solo_numeros(valor):
+        return "Solo números"
 
     return None
 

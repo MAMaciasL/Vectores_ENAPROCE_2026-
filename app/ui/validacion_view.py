@@ -157,7 +157,7 @@ class ValidacionView(ctk.CTkFrame):
         columnas = ("Nombre Vector", "Variables Involucradas", "Procedimiento")
         self.tabla = ttk.Treeview(frame, columns=columnas, show="tree headings")
         self.tabla.heading("#0", text="ID")
-        self.tabla.column("#0", width=100)
+        self.tabla.column("#0", width=50)
 
         
         self.tabla.column("Nombre Vector", width=120, stretch=False)
@@ -345,22 +345,19 @@ class ValidacionView(ctk.CTkFrame):
         if not valores or all(v == "" for v in valores):
             return
         
-        id = valores[0]
-        nombre = valores[1]
-        variables = valores[2]
-        procedimiento = valores[3]
+        nombre = valores[0]
+        variables = valores[1]
+        procedimiento = valores[2]
 
         ventana = ctk.CTkToplevel(self)
         ventana.title("Detalle del error")
         ventana.geometry("600x400")
 
-        ctk.CTkLabel(
-            ventana, text="ID", font=(FONT, 14, "bold")
-        ).pack(anchor="w", padx=10, pady=(10, 0))
+        try:
 
-        ctk.CTkLabel(
-            ventana, text=id, wraplength=550
-        ).pack(anchor="w", padx=10)
+            ventana.iconbitmap("assets/Designer.ico")
+        except:
+                pass
 
         ctk.CTkLabel(
             ventana, text="Nombre Vector", font=(FONT, 14, "bold")
@@ -382,8 +379,13 @@ class ValidacionView(ctk.CTkFrame):
             ventana, text="Procedimiento", font=(FONT, 14, "bold")
         ).pack(anchor="w", padx=10, pady=(10, 0))
 
-        textbox = ctk.CTkTextbox(ventana, width=580, height=200)
-        textbox.pack(padx=10, pady=5)
+        frame_proc = ctk.CTkFrame(ventana)
+        frame_proc.pack(fill="both",
+        expand=True, padx=10, pady=10)
+
+        textbox = ctk.CTkTextbox(frame_proc)
+        textbox._textbox.configure(wrap="word")
+        textbox.pack(fill="both", expand=True)
 
         textbox.insert("1.0", procedimiento)
         textbox.configure(state="disabled")
