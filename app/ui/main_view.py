@@ -44,7 +44,7 @@ class MainView(ctk.CTkFrame):
         # LOGO / TITULO
         ctk.CTkLabel(
             self.sidebar,
-            text="ENAPROCE",
+            text="ENIFARM",
             font=(FONT, 20, "bold"),
             text_color="white"
         ).pack(pady=(30, 20))

@@ -3,7 +3,6 @@ import time
 from app.utils.path_utils import resource_path
 from app.repositories.excel_reader import cargar_vectores
 from app.services.rules.engine import ejecutar_validaciones
-from app.services.rules.catalogo_auto import construir_catalogos_desde_vectores
 
 
 def procesar_archivo_completo(ruta):
@@ -19,7 +18,7 @@ def procesar_archivo_completo(ruta):
     # =========================
     # LEER VECTORES
     # =========================
-    ruta_vectores = resource_path("data/Vectores_Enaproce_2026_220526.xlsx")
+    ruta_vectores = resource_path("data/Vectores_Enifarm_2026.xlsx")
     vectores = cargar_vectores(ruta_vectores)
 
     # =========================

@@ -47,7 +47,7 @@ class ValidacionView(ctk.CTkFrame):
             return
 
         df = AppState.resultados_actuales
-        base = "E_ENAPROCE_"
+        base = "E_ENIFARM_"
 
         if texto.strip() == "" or texto.strip() == base:
             self.df_errores = df
@@ -78,7 +78,7 @@ class ValidacionView(ctk.CTkFrame):
 
         ctk.CTkLabel(
             header,
-            text="Validador de Vectores para Enaproce 2026",
+            text="Validador de Vectores para Enifarm 2026",
             font=(FONT, 24, "bold"),
             text_color=COLOR_TITULOS,
         ).pack(anchor="w")
@@ -146,7 +146,7 @@ class ValidacionView(ctk.CTkFrame):
         ).pack(side="left", padx=5)
 
         self.entry_buscar = ctk.CTkEntry(topbar)
-        self.entry_buscar.insert(0, "E_ENAPROCE_")
+        self.entry_buscar.insert(0, "E_ENIFARM_")
         self.entry_buscar.pack(side="right")
 
         self.entry_buscar.bind(
