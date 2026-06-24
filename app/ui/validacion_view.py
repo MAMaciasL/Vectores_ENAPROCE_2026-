@@ -157,12 +157,12 @@ class ValidacionView(ctk.CTkFrame):
         columnas = ("Nombre Vector", "Variables Involucradas", "Procedimiento")
         self.tabla = ttk.Treeview(frame, columns=columnas, show="tree headings")
         self.tabla.heading("#0", text="ID")
-        self.tabla.column("#0", width=50)
+        self.tabla.column("#0", width=150, stretch=False)
 
         
-        self.tabla.column("Nombre Vector", width=120, stretch=False)
-        self.tabla.column("Variables Involucradas", width=180, stretch=False)
-        self.tabla.column("Procedimiento", width=500, stretch=True)
+        self.tabla.column("Nombre Vector", width=150, stretch=False)
+        self.tabla.column("Variables Involucradas", width=300, stretch=False)
+        self.tabla.column("Procedimiento", width=300, stretch=True)
 
 
         for col in columnas:
